@@ -2,17 +2,25 @@ package net.softglobe.permissionstutorial
 
 import android.Manifest.permission.CAMERA
 import android.Manifest.permission.POST_NOTIFICATIONS
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.DialogInterface.OnClickListener
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+
+const val CHANNEL_ID = "MY_CHANNEL_ID"
 
 class MainActivity : AppCompatActivity() {
     var permissionsList = arrayOf(POST_NOTIFICATIONS, CAMERA)
     var permissionRequestCode = 1
+    private lateinit var channel: NotificationChannel
+    private lateinit var notificationManager: NotificationManager
 
    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +33,22 @@ class MainActivity : AppCompatActivity() {
                requestPermissions(permissionsList, permissionRequestCode)
            }
        }
-    }
+
+       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+           channel = NotificationChannel(CHANNEL_ID, "Important Notification", NotificationManager.IMPORTANCE_HIGH)
+           notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+           notificationManager.createNotificationChannel(channel)
+       }
+
+       findViewById<Button>(R.id.notification_btn).setOnClickListener {
+           val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+               .setContentTitle("Notification From Technopoints")
+               .setContentText("This is notification triggered locally from app")
+               .setSmallIcon(R.drawable.baseline_ac_unit_24)
+               .build()
+           notificationManager.notify(100, notification)
+       }
+   }
 
     private fun checkPermissions() : Boolean{
         for (permission in permissionsList) {
